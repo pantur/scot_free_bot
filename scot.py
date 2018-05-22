@@ -12,11 +12,13 @@
 from __future__ import print_function
 try:
     import praw
+    import time
 except ImportError as ie:
     print('ErrorImportingModules')
 try:
-    from ResConfig import usr, pwd, sec, clid, \
-         desc, debugFlag as DEBUG
+    from ResConfig import debugFlag as DEBUG, \
+         MAX_ERROR_COUNT, usr, pwd, sec, \
+         clid, desc
 except ImportError as configError:
     print('UnableToImportConfig')
 
@@ -46,6 +48,7 @@ def getTopComments(url):
     return top
 
 if __name__=='__main__':
+    ERROR_COUNT = 0
     if DEBUG:
         print('user: ' + usr)
         print('pwd: ' + pwd)
@@ -55,15 +58,17 @@ if __name__=='__main__':
     if connectToReddit():
         if DEBUG:
             print('Successfully connected to Reddit')
+        while ERROR_COUNT <= MAX_ERROR_COUNT:
+            try:
+                findViolations()
+                getUserName()
+                constructMessage()
+                postMessage()
+                increaseTotalViolationCount()
+            except Exception as e:
+                ERROR_COUNT += 1
+                print('EncounteredError')
+                print(e)
+        time.sleep(LONG_SLEEP)
 
 
-'''    unableToPost = []
-    for _ in resumes:
-        if post(_) and DEBUG:
-            print('Success! Posted: ' + _)
-        elif DEBUG:
-            print('Failed! Couldn\'t post: ' + _)
-            unableToPost.append(_)
-        else:
-            unableToPost.append(_)'''
-        
