@@ -17,8 +17,8 @@ except ImportError as ie:
     print('ErrorImportingModules')
 try:
     from ResConfig import debugFlag as DEBUG, \
-         MAX_ERROR_COUNT, usr, pwd, sec, \
-         clid, desc
+         MAX_ERROR_COUNT, LONG_SLEEP, \
+         usr, pwd, sec, clid, desc
 except ImportError as configError:
     print('UnableToImportConfig')
 
@@ -35,17 +35,10 @@ def connectToReddit():
         return False
     return True
 
-def getTopComments(url):
-    top = []
-    submission = CONN.submission(url=url)
-    submission.comments.replace_more(limit=None)
-    for top_level_comment in submission.comments:
-        if DEBUG:
-            print('-' * 50,) 
-            print(top_level_comment.body)
-            print('-' * 50,)
-        top.append(top_level_comment.body)
-    return top
+def findViolations():
+    for comment in CONN.subreddit('all').stream.comments():
+        if 'scotch' and 'free' in comment:
+            print(comment.body)
 
 if __name__=='__main__':
     ERROR_COUNT = 0
@@ -58,17 +51,27 @@ if __name__=='__main__':
     if connectToReddit():
         if DEBUG:
             print('Successfully connected to Reddit')
-        while ERROR_COUNT <= MAX_ERROR_COUNT:
-            try:
-                findViolations()
-                getUserName()
-                constructMessage()
-                postMessage()
-                increaseTotalViolationCount()
-            except Exception as e:
-                ERROR_COUNT += 1
-                print('EncounteredError')
-                print(e)
-        time.sleep(LONG_SLEEP)
+        while True:
+            if ERROR_COUNT <= MAX_ERROR_COUNT:
+                try:
+                    findViolations()
+                    '''getUserName()
+                    constructMessage()
+                    postMessage()
+                    increaseTotalViolationCount()'''
+                except Exception as e:
+                    ERROR_COUNT += 1
+                    if DEBUG:
+                        print('ERROR_COUNT: ' + str(ERROR_COUNT))
+                    print('EncounteredError')
+                    print(e)
+            else:
+                if DEBUG:
+                    print('Now sleeping')
+
+                time.sleep(LONG_SLEEP)
+
+                if DEBUG:
+                    print('Finished sleeping')
 
 
