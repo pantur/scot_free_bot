@@ -37,8 +37,25 @@ def connectToReddit():
 
 def findViolations():
     for comment in CONN.subreddit('all').stream.comments():
-        if 'scotch' and 'free' in comment:
-            print(comment.body)
+        if 'fuck' in str(comment.body.encode('utf-8')):
+            print(comment.body.encode('utf-8'))
+
+def pauseBot(len):
+    if DEBUG:
+        print('Sleeping for some time...')
+
+    if len == 1:
+        time.sleep(SHORT_SLEEP)
+    elif len == 2:
+        time.sleep(LONG_SLEEP)
+    else:
+        print('InvalidSleepTime')
+        return False
+
+    if DEBUG:
+        print('Woke up from sleeping!')
+
+    return True
 
 if __name__=='__main__':
     ERROR_COUNT = 0
@@ -55,10 +72,7 @@ if __name__=='__main__':
             if ERROR_COUNT <= MAX_ERROR_COUNT:
                 try:
                     findViolations()
-                    '''getUserName()
-                    constructMessage()
-                    postMessage()
-                    increaseTotalViolationCount()'''
+                    recordTotalViolationCount()
                 except Exception as e:
                     ERROR_COUNT += 1
                     if DEBUG:
@@ -66,12 +80,5 @@ if __name__=='__main__':
                     print('EncounteredError')
                     print(e)
             else:
-                if DEBUG:
-                    print('Now sleeping')
-
-                time.sleep(LONG_SLEEP)
-
-                if DEBUG:
-                    print('Finished sleeping')
-
-
+                if pauseBot(1):
+                    print('ResumingOperations')
