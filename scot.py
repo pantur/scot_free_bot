@@ -77,20 +77,23 @@ if __name__ == '__main__':
         print('sec: ' + sec)
         print('app: ' + clid)
 
-    if connectToReddit():
-        if DEBUG:
-            print('Successfully connected to Reddit')
-        while True:
-            if ERROR_COUNT <= MAX_ERROR_COUNT:
-                try:
-                    findViolations()
-                    recordTotalViolationCount()
-                except Exception as e:
-                    ERROR_COUNT += 1
-                    if DEBUG:
-                        print('ERROR_COUNT: ' + str(ERROR_COUNT))
-                    print('EncounteredError')
-                    print(e)
-            else:
-                if pauseBot(1):
-                    print('ResumingOperations')
+    try:
+        if connectToReddit():
+            if DEBUG:
+                print('Successfully connected to Reddit')
+            while True:
+                if ERROR_COUNT <= MAX_ERROR_COUNT:
+                    try:
+                        findViolations()
+                        recordTotalViolationCount()
+                    except Exception as e:
+                        ERROR_COUNT += 1
+                        if DEBUG:
+                            print('ERROR_COUNT: ' + str(ERROR_COUNT))
+                        print('EncounteredError')
+                        print(e)
+                else:
+                    if pauseBot(1):
+                        print('ResumingOperations')
+    except KeyboardInterrupt as ki:
+        print('Thanks! See you next time!')
