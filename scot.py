@@ -9,25 +9,25 @@
 
      Can't let them get away scotch-free!
 '''
+
 from __future__ import print_function
 
 try:
     import praw
     import time
+    from random import randint
 except ImportError as ie:
-    print('ErrorImportingModules')
-    print(ie)
+    print('ErrorImportingModules', ie)
 try:
     from ResConfig import debugFlag as DEBUG, \
         MAX_ERROR_COUNT, SHORT_SLEEP, \
-        LONG_SLEEP, usr, pwd, sec, \
+        LONG_SLEEP, MESSAGE, usr, pwd, sec, \
         clid, desc
 except ImportError as configError:
-    print('UnableToImportConfig')
-    print(configError)
+    print('UnableToImportConfig', configError)
 
 
-def connectToReddit():
+def connect_to_reddit():
     global CONN
     try:
         CONN = praw.Reddit(user_agent=desc,
@@ -41,31 +41,47 @@ def connectToReddit():
     return True
 
 
-def findViolations():
-    for comment in CONN.subreddit('test').stream.comments():
-        if 'scotch-free' in str(comment.body.encode('utf-8')):
-            print(comment.body.encode('utf-8'))
+def find_violations():
+    try:
+        for comment in CONN.subreddit('test').stream.comments():
+            comment_str = str(comment.body.encode('utf-8').lower())
+            if 'scotch-free' or 'scotch free' in comment_str:
+                if DEBUG:
+                    print(comment_str)
+                comment.reply(create_msg(comment.author))
+                record_total_violation_count()
+                pause_bot(1)
+            elif DEBUG:
+                print('FindingComments')
+    except Exception as ex:
+        print('CouldNotPostMessage', ex)
 
 
-def pauseBot(len_):
-    if DEBUG:
-        print('Sleeping for some time...')
-    
+def create_msg(author):
+    return MESSAGE.format(str(author))
+
+
+def pause_bot(len_):
     if len_ == 1:
-        time.sleep(SHORT_SLEEP)
+        sleep_ = randint(10, 30)
     elif len_ == 2:
-        time.sleep(LONG_SLEEP)
+        sleep_ = LONG_SLEEP
     else:
         print('InvalidSleepTime')
         return False
-    
+
+    if DEBUG:
+        print('Sleeping for some time...')
+
+    time.sleep(sleep_)
+
     if DEBUG:
         print('Woke up from sleeping!')
 
     return True
 
 
-def recordTotalViolationCount():
+def record_total_violation_count():
     pass
 
 
@@ -78,14 +94,13 @@ if __name__ == '__main__':
         print('app: ' + clid)
 
     try:
-        if connectToReddit():
+        if connect_to_reddit():
             if DEBUG:
                 print('Successfully connected to Reddit')
             while True:
                 if ERROR_COUNT <= MAX_ERROR_COUNT:
                     try:
-                        findViolations()
-                        recordTotalViolationCount()
+                        find_violations()
                     except Exception as e:
                         ERROR_COUNT += 1
                         if DEBUG:
@@ -93,7 +108,7 @@ if __name__ == '__main__':
                         print('EncounteredError')
                         print(e)
                 else:
-                    if pauseBot(1):
+                    if pause_bot(1):
                         print('ResumingOperations')
     except KeyboardInterrupt as ki:
         print('Thanks! See you next time!')
