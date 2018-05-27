@@ -45,9 +45,12 @@ def find_violations():
     try:
         for comment in CONN.subreddit('test').stream.comments():
             comment_str = str(comment.body.encode('utf-8').lower())
-            if 'scotch-free' or 'scotch free' in comment_str:
+            if 'scotch-free' in comment_str or 'scotch free' in comment_str:
                 if DEBUG:
                     print(comment_str)
+                    print('first: ', 'scotch-free' or 'scotch free' in comment_str)
+                    print('second: ', 'scotch free' in comment_str)
+                    print('third: ', 'scotch-free' in comment_str)
                 comment.reply(create_msg(comment.author))
                 record_total_violation_count()
                 pause_bot(1)
@@ -63,7 +66,7 @@ def create_msg(author):
 
 def pause_bot(len_):
     if len_ == 1:
-        sleep_ = randint(10, 30)
+        sleep_ = randint(1, SHORT_SLEEP)
     elif len_ == 2:
         sleep_ = LONG_SLEEP
     else:
@@ -105,8 +108,7 @@ if __name__ == '__main__':
                         ERROR_COUNT += 1
                         if DEBUG:
                             print('ERROR_COUNT: ' + str(ERROR_COUNT))
-                        print('EncounteredError')
-                        print(e)
+                        print('EncounteredError', e)
                 else:
                     if pause_bot(1):
                         print('ResumingOperations')
