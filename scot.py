@@ -26,6 +26,11 @@ try:
 except ImportError as configError:
     print('UnableToImportConfig', configError)
 
+try:
+    from Violations import violation_count as VC
+except Exception as vie:
+    print('CouldNotLoadViolationsModule', vie)
+
 
 def connect_to_reddit():
     global CONN
@@ -43,7 +48,7 @@ def connect_to_reddit():
 
 def find_violations():
     try:
-        for comment in CONN.subreddit('test').stream.comments():
+        for comment in CONN.subreddit('all').stream.comments():
             comment_str = str(comment.body.encode('utf-8').lower())
             if 'scotch-free' in comment_str or 'scotch free' in comment_str:
                 if DEBUG:
@@ -85,7 +90,10 @@ def pause_bot(len_):
 
 
 def record_total_violation_count():
-    pass
+    try:
+        VC.violation_count += 1
+    except Exception as ve:
+        print('UnableToRecordViolation', ve)
 
 
 if __name__ == '__main__':
