@@ -11,4 +11,4 @@ app: mysterious-cove-79333
   on:
     repo: pantur/scot_free_bot
 script:
-- echo "=== skipping tests ==="
+- echo "=== Skipping Tests ==="
